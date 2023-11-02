@@ -8,8 +8,8 @@ import '6_shared/styles/index.scss'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-  <ReduxProvider store={store}>
-    <RouterProvider router={router} />
-  </ReduxProvider>
+    <ReduxProvider store={store}>
+      <RouterProvider router={router} />
+    </ReduxProvider>
   </React.StrictMode>
 )
