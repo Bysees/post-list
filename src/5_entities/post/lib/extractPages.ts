@@ -1,7 +1,7 @@
 type Pages = {
   first?: number
-  prev: number
-  next: number
+  prev?: number
+  next?: number
   last: number
 }
 

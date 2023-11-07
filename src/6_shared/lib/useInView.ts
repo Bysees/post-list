@@ -1,41 +1,47 @@
-import { RefObject, useState, useEffect } from 'react'
+import { useState, useRef, useCallback } from 'react'
 
 type Events = {
-  onIntersect?: () => void
+  onIntersect?: (isIntersecting: boolean) => void
 }
 
-interface UseInView {
-  (ref: RefObject<HTMLElement | null>, events: Events): { isIntersect: boolean }
-}
-
-export const useInView: UseInView = (ref: RefObject<HTMLElement | null>, events = {}) => {
+export const useInView = (events: Events = {}) => {
   const [isIntersect, setIsIntersect] = useState(false)
   const { onIntersect } = events
 
-  useEffect(() => {
-    if (!ref.current) {
-      return
-    }
+  const ioRef = useRef<IntersectionObserver | null>(null)
 
-    const observer = new IntersectionObserver(([entry]) => {
+  const observerHandler: IntersectionObserverCallback = useCallback(
+    ([entry]) => {
       const { isIntersecting } = entry
-      
       setIsIntersect(isIntersecting)
-    })
+      onIntersect?.(isIntersecting)
+    },
+    [onIntersect]
+  )
 
-    observer.observe(ref.current)
+  const attachIntersectionObserver = useCallback(
+    (element: HTMLElement) => {
+      const observer = new IntersectionObserver(observerHandler)
+      observer.observe(element)
+      ioRef.current = observer
+    },
+    [observerHandler]
+  )
 
-    return () => {
-      observer.disconnect()
-    }
-  }, [ref.current])
+  const detachIntersectionObserver = useCallback(() => {
+    ioRef.current?.disconnect()
+  }, [])
 
-  useEffect(() => {
-    if (isIntersect && onIntersect) {
-      onIntersect()
-      setIsIntersect(false)
-    }
-  }, [isIntersect, onIntersect])
+  const refCb = useCallback(
+    (element: HTMLElement | null) => {
+      if (element) {
+        attachIntersectionObserver(element)
+      } else {
+        detachIntersectionObserver()
+      }
+    },
+    [attachIntersectionObserver, detachIntersectionObserver]
+  )
 
-  return { isIntersect }
+  return { ref: refCb, isIntersect }
 }

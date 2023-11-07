@@ -6,7 +6,9 @@ import { baseApi } from '6_shared/api'
 type PostsQueryResult = {
   posts: Post[]
   totalCount: number
-  nextPage: number
+  firstPage?: number
+  prevPage?: number
+  nextPage?: number
   lastPage: number
 }
 
@@ -33,15 +35,19 @@ const postApi = baseApi.injectEndpoints({
         return {
           posts,
           totalCount,
+          firstPage: pages.first,
+          prevPage: pages.prev,
           nextPage: pages.next,
           lastPage: pages.last
         }
-      }
+      },
+      keepUnusedDataFor: 60 * 10
     }),
     postById: build.query<Post, Post['id']>({
       query: (id) => ({
         url: `/posts/${id}`
-      })
+      }),
+      keepUnusedDataFor: 60 * 10
     })
   })
 })
